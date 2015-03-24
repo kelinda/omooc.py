@@ -1,4 +1,3 @@
-
 # template for "Guess the number" mini-project
 # input will come from buttons and an input field
 # all output for the game will be printed in the console
@@ -8,6 +7,7 @@ import simplegui
 ### globals
 target = 0
 rangeUpperLimit = 0
+guessCnt = 0
 
 ### helper functions
 def gen_new_random(begin, end):
@@ -17,9 +17,17 @@ def new_game():
     # initialize global variables used in your code here
     global target
     global rangeUpperLimit
+    global guessCnt
     target = gen_new_random(1, rangeUpperLimit)
+    guessCnt = 0
     return
-    
+
+def you_loss():
+    print "you loss, do you give in?"
+
+    timer.stop()
+    return
+
 ### define event handlers for control panel
 def range100():
     # button that changes the range to [0,100) and starts a new game 
@@ -37,17 +45,49 @@ def range1000():
 
 def judge_guess(guess):
     global target
+    global rangeUpperLimit
+    global guessCnt
+    
     if target == 0:
         print "You haven't choose the range"
         return
+    
     if not guess.isdigit():
         print "Please input a number!"
         timer.stop()
         timer.start()
         return
+    
+    guessCnt += 1
+    performance = 0    
+    if rangeUpperLimit == 100:
+        if guessCnt > 10:
+            performance = -1
+    if rangeUpperLimit == 1000:
+        if guessCnt > 13:
+            performance = -1
+    if performance == -1:
+        print "you loss, do you give in?"
+        target = 0
+        timer.stop()
+        return
+    
     if int(guess) == target:
 #        global target
-        print "bingo!"
+        if rangeUpperLimit == 100: 
+            if guessCnt <= 5:            
+                performance = 10
+            else:
+                performance = 6
+        if rangeUpperLimit == 1000:
+            if guessCnt <= 7:
+                performance = 10
+            else:
+                performance = 6
+        if performance == 10:
+            print "you are genius!"
+        else:
+            print "bingo! Come on."
         target = 0
         timer.stop()
         return
