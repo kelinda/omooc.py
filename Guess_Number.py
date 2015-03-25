@@ -68,7 +68,7 @@ def judge_guess(guess):
     global guessCnt
     
     if target == 0:
-        print_to_canvas( "You haven't choose the range")
+        print_to_canvas( "You should choose a range first.")
         return
     
     if not guess.isdigit():
@@ -78,37 +78,53 @@ def judge_guess(guess):
         return
     
     guessCnt += 1
-    performance = 0    
-    if rangeUpperLimit == 100:
-        if guessCnt > 10:
-            performance = -1
-    if rangeUpperLimit == 1000:
-        if guessCnt > 13:
-            performance = -1
-    if performance == -1:
-        print_to_canvas("you loss, do you give in?")
-        target = 0
+    if int(guess) < 1 or int(guess) > rangeUpperLimit:
+        if rangeUpperLimit == 100:
+            print_to_canvas("input a number between 1 and 100")
+        else:
+            print_to_canvas("input a number between 1 and 1000")
         timer.stop()
+        timer.start()
         return
     
+    performance = 0
     if int(guess) == target:
         if rangeUpperLimit == 100: 
             if guessCnt <= 5:            
-                performance = 10
+                performance = 10  # 10 means perfect.
             else:
-                performance = 6
+                performance = 6   # non-negative, non-10, just good whatever.
         if rangeUpperLimit == 1000:
             if guessCnt <= 7:
                 performance = 10
             else:
                 performance = 6
         if performance == 10:
-            print_to_canvas("you are genius!")
+            str = "OMG! JUST %(times)d TIMES."%{'times':guessCnt}
+            print_to_canvas(str)
+            print_to_canvas("/*******************\\")
+            print_to_canvas("|*      you are genius!     *|")
+            print_to_canvas("\\*******************/")
         else:
-            print_to_canvas("bingo! Come on.")
+            print_to_canvas("CONGRATULATIONS!")
+            str = "You've used %(times)d times."%{'times':guessCnt}
+            print_to_canvas(str)
+            print_to_canvas("Wanna make it better?")
         target = 0
         timer.stop()
         return
+    else:
+        if rangeUpperLimit == 100:
+            if guessCnt > 10:
+                performance = -1
+        if rangeUpperLimit == 1000:
+            if guessCnt > 13:
+                performance = -1
+        if performance == -1:
+            print_to_canvas("Game over. Do you give in?")
+            target = 0
+            timer.stop()
+            return    
     if int(guess) < target:
         print_to_canvas("higher")
     else:
@@ -126,6 +142,7 @@ def stopTimer():
         print_to_canvas("> We haven't started ...")
         return
     timer.stop()
+    target = 0
     print_to_canvas("bye!")
     
     
