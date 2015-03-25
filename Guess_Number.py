@@ -5,14 +5,24 @@ import random
 import simplegui
 
 ### globals
-target = 0
-rangeUpperLimit = 0
-guessCnt = 0
+target = 0            # the number computer hold
+rangeUpperLimit = 0   # 1-rangeUpperLimit is the guess range.
+guessCnt = 0          # how many times user have guessed.
+
+lineNumber = 0        # line number of output on the canvas.
+textSize = 15          # each character will take textSize pixels on canvas.
+lineHeight = textSize + 5
+canvasHeight = 400    # canvas height in pixels
+canvasWidth = 250
+maxLineNumber = canvasHeight / lineHeight
+
+outputStrings = []    # store all the outputs in current canvas.
 
 ### helper functions
 def gen_new_random(begin, end):
     return random.randint(begin, end)
 
+# init the game parameters
 def new_game():
     # initialize global variables used in your code here
     global target
@@ -22,11 +32,18 @@ def new_game():
     guessCnt = 0
     return
 
-def you_loss():
-    print "you loss, do you give in?"
-
-    timer.stop()
+# print to canvas, not the console
+def print_to_canvas(str):
+    global maxLineNumber
+    global lineNumber
+    global outputStrings
+    
+    outputStrings += [str]
+    lineNumber += 1
+    if lineNumber > maxLineNumber:
+        outputStrings = outputStrings[1:len(outputStrings)]
     return
+    
 
 ### define event handlers for control panel
 def range100():
@@ -34,6 +51,7 @@ def range100():
     global rangeUpperLimit
     rangeUpperLimit = 100
     new_game()
+    print_to_canvas( "game start!")
     timer.start()
 
 def range1000():
@@ -41,6 +59,7 @@ def range1000():
     global rangeUpperLimit
     rangeUpperLimit = 1000
     new_game()
+    print_to_canvas( "game start!")
     timer.start()
 
 def judge_guess(guess):
@@ -49,11 +68,11 @@ def judge_guess(guess):
     global guessCnt
     
     if target == 0:
-        print "You haven't choose the range"
+        print_to_canvas( "You haven't choose the range")
         return
     
     if not guess.isdigit():
-        print "Please input a number!"
+        print_to_canvas("Please input a number!")
         timer.stop()
         timer.start()
         return
@@ -67,13 +86,12 @@ def judge_guess(guess):
         if guessCnt > 13:
             performance = -1
     if performance == -1:
-        print "you loss, do you give in?"
+        print_to_canvas("you loss, do you give in?")
         target = 0
         timer.stop()
         return
     
     if int(guess) == target:
-#        global target
         if rangeUpperLimit == 100: 
             if guessCnt <= 5:            
                 performance = 10
@@ -85,34 +103,48 @@ def judge_guess(guess):
             else:
                 performance = 6
         if performance == 10:
-            print "you are genius!"
+            print_to_canvas("you are genius!")
         else:
-            print "bingo! Come on."
+            print_to_canvas("bingo! Come on.")
         target = 0
         timer.stop()
         return
     if int(guess) < target:
-        print "higher"
+        print_to_canvas("higher")
     else:
-        print "lower"
+        print_to_canvas("lower")
     timer.stop()
     timer.start()
     return
     
 def boring():
-    print "> What are you thinking about ?!"
+    print_to_canvas("> What are you thinking about ?!")
     
 def stopTimer():
     global target
     if target == 0:
-        print "> We haven't started ..."
+        print_to_canvas("> We haven't started ...")
         return
     timer.stop()
-    print 'bye!'
+    print_to_canvas("bye!")
+    
+    
+# define draw handler
+def result_reporter(canvas):    
+    global outputStrings
+    global lineHeight
+    
+    localLineNumber = 1        
+    for outputLine in outputStrings:
+        canvas.draw_text(outputLine, [0, localLineNumber*lineHeight], textSize, "blue")
+        localLineNumber += 1
+    return
+
     
 # create frame
-frame = simplegui.create_frame("Guess Num Game", 150, 180)
+frame = simplegui.create_frame("Guess Num Game", canvasWidth, canvasHeight + textSize/2)
 frame.set_canvas_background("white")
+frame.set_draw_handler(result_reporter)
 
 timer = simplegui.create_timer(10000, boring)
 
