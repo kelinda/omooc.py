@@ -81,13 +81,16 @@ def canvas_draw_pen_option(pen, left, top, right, bottom):
     global menu_list
     option_id = 0
     if pen == "triangle":
-        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue", outline='#aaa', width=3)
+#        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue", outline='#aaa', width=3)
+        option_id = canvas.create_bitmap(left+2, top+2, anchor=tk.NW, bitmap="gray25")
         menu_list[-1].append(option_id)
     elif pen == "circle":
-        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="red", outline='#aaa', width=3)
+#        option_id = canvas.create_polygon(left+2, top+2, anchor=tk.NW, right, top, right, bottom, left, bottom, bitmap="gray50", outline='#aaa', width=3)
+        option_id = canvas.create_bitmap(left+2, top+2, anchor=tk.NW, bitmap="gray50")
         menu_list[-1].append(option_id)
     elif pen == "square":
-        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="green", outline='#aaa', width=3)
+#        option_id = canvas.create_polygon(left+2, top+2, anchor=tk.NW, right, top, right, bottom, left, bottom, bitmap="gray25", outline='#aaa', width=3)
+        option_id = canvas.create_bitmap(left+2, top+2, anchor=tk.NW, bitmap="gray75")
         menu_list[-1].append(option_id)
         
 def canvas_draw_color_option(color, left, top, right, bottom):
@@ -105,8 +108,11 @@ def canvas_draw_color_option(color, left, top, right, bottom):
 	    menu_list[-1].append(option_id)
 
 def canvas_draw_draw_switch(left, top, right, bottom):
-	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="#e2c", outline='#aaa', width=3)
-	    menu_list[-1].append(option_id)
+	    #option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="#e2c", outline='#aaa', width=3)
+        option_id = canvas.create_bitmap(left+5, top+2, anchor=tk.NW, bitmap="gray12")
+        menu_list[-1].append(option_id)
+        option_id = canvas.create_bitmap(left-5+option_square_size, top+2, anchor=tk.NW, bitmap="error")
+        menu_list[-1].append(option_id)
 
 def draw_menu(mouse_e):
     global canvas
