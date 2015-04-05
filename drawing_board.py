@@ -3,7 +3,9 @@ import Tkinter as tk
 ## define globals
 draw_select = 0 #0 for lines, 1 for dots
 pen_select = 0 #
-color_select = 0 #
+color_select = 0 #0 for red, 1 for green, 2 for blue
+
+no_draw = False #after select click, do not draw anything
 
 pen_list = ["triangle", "circle", "square"]
 color_list = ["red", "green", "blue"]
@@ -55,12 +57,16 @@ def canvas_draw_color_option(color, left, top, right, bottom):
 	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue")
 	    menu_list[-1].append(option_id)
 
+def canvas_draw_draw_switch(left, top, right, bottom):
+	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="#e2c")
+	    menu_list[-1].append(option_id)
+
 def draw_menu(mouse_e):
     global canvas
     global option_square_size
     global pen_list, color_list
     global menu_area
-    menu_height = max(len(pen_list),len(color_list))*option_square_size
+    menu_height = max(len(pen_list),len(color_list))*option_square_size + option_square_size #the last one is draw select switch
     menu_width = 2*option_square_size 
     menu_area[2] = menu_width
     menu_area[3] = menu_height
@@ -74,6 +80,7 @@ def draw_menu(mouse_e):
     for color in color_list:
         canvas_draw_color_option(color, mouse_e.x + option_square_size, mouse_e.y + i*option_square_size, mouse_e.x + 2*option_square_size, mouse_e.y + (i+1)*option_square_size)
         i += 1
+    canvas_draw_draw_switch(mouse_e.x, mouse_e.y + max(len(pen_list), len(color_list))*option_square_size, mouse_e.x + 2*option_square_size, mouse_e.y + max(len(pen_list), len(color_list))*option_square_size + option_square_size)
 
 def is_cursor_in_menu(cx, cy):
     global menu_area
@@ -87,9 +94,18 @@ def is_cursor_in_menu(cx, cy):
 def select_option(cx, cy):
     global menu_area
     global option_square_size
-    global pen_select, color_select
+    global draw_select, pen_select, color_select
+    global no_draw
+
+    no_draw = True
     pen_or_color = (cx - menu_area[0]) / option_square_size #0 is  pen, 1 is color
     selected_option = (cy - menu_area[1]) / option_square_size
+    if selected_option == 3: #draw switch
+        if draw_select == 0:
+            draw_select = 1
+        else:
+            draw_select = 0
+        return
     if pen_or_color == 0: # pen
         if selected_option == 0:#triangle
             pen_select = 0 
@@ -120,17 +136,32 @@ def clear_menus(mouse_e):
 	
 def draw_dots(mouse_e):
     global canvas
-
     global radius
+    global pen_select, color_select
     x = mouse_e.x
     y = mouse_e.y
     print x,y
     if pen_select == 0: #circle
-	    canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius)
+        if color_select == 0:
+	        canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius, fill='red', outline='red')
+        elif color_select == 1:
+	        canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius, fill='green', outline='green')
+        elif color_select == 2:
+	        canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius, fill='blue', outline='blue')
     elif pen_select == 1: # striganle
-        canvas.crate_polygon(x, y-1.712/3*10, x+10/2, y+1.712/6*10, x-10/2, y+1.712/6*10)
+        if color_select == 0:
+            canvas.create_polygon(x, y-1.712/3*10, x+10/2, y+1.712/6*10, x-10/2, y+1.712/6*10, fill='red', outline='red')
+        if color_select == 1:
+            canvas.create_polygon(x, y-1.712/3*10, x+10/2, y+1.712/6*10, x-10/2, y+1.712/6*10, fill='green', outline='green')
+        if color_select == 2:
+            canvas.create_polygon(x, y-1.712/3*10, x+10/2, y+1.712/6*10, x-10/2, y+1.712/6*10, fill='blue', outline='blue')
     elif pen_select == 2: # square
-        canvas.create_polygon(x-10/2, y-10/2, x+10/2, y-10/2, x+10/2, y+10/2, x-10/2, y+10/2)
+        if color_select == 0:
+            canvas.create_polygon(x-10/2, y-10/2, x+10/2, y-10/2, x+10/2, y+10/2, x-10/2, y+10/2, fill='red', outline='red')
+        if color_select == 1:
+            canvas.create_polygon(x-10/2, y-10/2, x+10/2, y-10/2, x+10/2, y+10/2, x-10/2, y+10/2, fill='green', outline='green')
+        if color_select == 2:
+            canvas.create_polygon(x-10/2, y-10/2, x+10/2, y-10/2, x+10/2, y+10/2, x-10/2, y+10/2, fill='blue', outline='blue')
 
 def drawing(mouse_e):
     global canvas
@@ -181,7 +212,11 @@ def mouse1_up(mouse_e):
         oldy = 0
         canvas.unbind('<Motion>')
     else:
-        draw_dots(mouse_e)
+        global no_draw
+        if no_draw:
+            no_draw = False
+        else:
+            draw_dots(mouse_e)
 
 def mouse3_up(mouse_e):
     global menu_is_showing
@@ -193,16 +228,11 @@ def mouse3_up(mouse_e):
 
 ## define window
 root = tk.Tk()
-root.title("simple palette")
+root.title("SimpleDraw")
 root.geometry("600x500+200+150")
 
-beginButton = tk.Button(root,text="begin",width=20, height=1)
-beginButton.grid(column=0, row=0)
-canvas = tk.Canvas(root, width=400, height=200, bd=20, bg="#EEE")
-canvas.grid(column=1, row=0, columnspan=2, rowspan=2)
-canvas.create_line(100, 10, 40, 5, 45, 20, fill = 'red', width = 2)
-canvas.create_oval(100, 100, 200, 50 )
-canvas.create_polygon(3,3, 100,120, 50,150, fill= "blue", activefill="red")
+canvas = tk.Canvas(root, width=600, height=500, bd=2, bg="#EEE")
+canvas.grid(column=0, row=0, columnspan=1, rowspan=1)
 
 canvas.bind('<Button-1>', mouse1_down)
 canvas.bind('<ButtonRelease-1>', mouse1_up)
