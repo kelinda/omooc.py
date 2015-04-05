@@ -1,9 +1,9 @@
 import Tkinter as tk
-import tkFont
 
 ## define globals
 draw_select = 0 #0 for lines, 1 for dots
-pen_select = 0 #
+pen_select = 0 # for line: thin, medicore, thick
+               # for dot: triangle, circle, square
 color_select = 0 #0 for red, 1 for green, 2 for blue
 status_label_list = []
 
@@ -16,7 +16,7 @@ menu_list = [[]] #menu_list ids, subsequence hold drawing-option icon ids.
 menu_is_showing = 0 # 0 for no, 1 for yes.
 menu_area = [0, 0, 0, 0] # left, top, width, height
 
-option_square_size = 15  # drawing-option icon is square, this is the size.
+option_square_size = 20  # drawing-option icon is square, this is the size.
 circle_radius = 5 # circle dots radius
 triangle_size = 10 # triangle dot side length
 square_size = 10 # square dot side lenght
@@ -24,7 +24,9 @@ square_size = 10 # square dot side lenght
 oldx = 0
 oldy = 0
 
-## define helpers
+####################
+## define helpers ##
+####################
 def update_status_label():
     global canvas
     global draw_select, pen_select, color_select
@@ -41,12 +43,21 @@ def update_status_label():
     status_label_list[0] = (label_id)
 
     if pen_select == 0: #circle
-        label_text = 'circle'
+        if draw_select == 0:
+            label_text = 'thin'
+        else: 
+            label_text = 'circle'
     elif pen_select == 1: # striganle
-        label_text = 'triangle'
+        if draw_select == 0:
+            label_text = 'medium'
+        else: 
+            label_text = 'triangle'
     elif pen_select == 2: # square
-        label_text = 'square'
-    label_id = canvas.create_text(555, 25, anchor=tk.SW, text=label_text, font=('Times', '12'), fill='#888')
+        if draw_select == 0:
+            label_text = 'thick'
+        else: 
+            label_text = 'square'
+    label_id = canvas.create_text(550, 25, anchor=tk.SW, text=label_text, font=('Times', '12'), fill='#888')
     status_label_list[1] = (label_id)
 
     if color_select == 0: #red
@@ -55,14 +66,14 @@ def update_status_label():
         label_text = 'green'
     if color_select == 2: #blue
         label_text = 'blue'
-    label_id = canvas.create_text(555, 45, anchor=tk.SW, text=label_text, font=('Times', '12'), fill=label_text)
+    label_id = canvas.create_text(550, 45, anchor=tk.SW, text=label_text, font=('Times', '12'), fill=label_text)
     status_label_list[2] = (label_id)
         
 
 def canvas_draw_rectangle(left, top, right, bottom):
     global canvas
     global menu_list
-    menu_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom,fill="white")
+    menu_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom,fill="white", outline='#aaa', width=3)
     menu_list.append([menu_id])
 
 def canvas_draw_pen_option(pen, left, top, right, bottom):
@@ -70,13 +81,13 @@ def canvas_draw_pen_option(pen, left, top, right, bottom):
     global menu_list
     option_id = 0
     if pen == "triangle":
-        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue")
+        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue", outline='#aaa', width=3)
         menu_list[-1].append(option_id)
     elif pen == "circle":
-        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="red")
+        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="red", outline='#aaa', width=3)
         menu_list[-1].append(option_id)
     elif pen == "square":
-        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="green")
+        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="green", outline='#aaa', width=3)
         menu_list[-1].append(option_id)
         
 def canvas_draw_color_option(color, left, top, right, bottom):
@@ -84,17 +95,17 @@ def canvas_draw_color_option(color, left, top, right, bottom):
     global menu_list
     option_id = 0
     if color == "red":
-	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="red")
+	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="red", outline='#aaa', width=3)
 	    menu_list[-1].append(option_id)
     elif color == "green":
-	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="green")
+	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="green", outline='#aaa', width=3)
 	    menu_list[-1].append(option_id)
     elif color == "blue":
-	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue")
+	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue", outline='#aaa', width=3)
 	    menu_list[-1].append(option_id)
 
 def canvas_draw_draw_switch(left, top, right, bottom):
-	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="#e2c")
+	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="#e2c", outline='#aaa', width=3)
 	    menu_list[-1].append(option_id)
 
 def draw_menu(mouse_e):
@@ -116,6 +127,7 @@ def draw_menu(mouse_e):
     for color in color_list:
         canvas_draw_color_option(color, mouse_e.x + option_square_size, mouse_e.y + i*option_square_size, mouse_e.x + 2*option_square_size, mouse_e.y + (i+1)*option_square_size)
         i += 1
+    
     canvas_draw_draw_switch(mouse_e.x, mouse_e.y + max(len(pen_list), len(color_list))*option_square_size, mouse_e.x + 2*option_square_size, mouse_e.y + max(len(pen_list), len(color_list))*option_square_size + option_square_size)
 
 def is_cursor_in_menu(cx, cy):
@@ -206,11 +218,26 @@ def drawing(mouse_e):
 
     if oldx != 0 and oldy != 0:
         if color_select == 0:
-            canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="red")
+            if pen_select == 0:  #thin
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="red", width=1)
+            if pen_select == 1:  #medicore
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="red", width=3)
+            if pen_select == 2:  #thick
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="red", width=5)
         elif color_select == 1:
-            canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="green")
+            if pen_select == 0:  #thin
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="green", width=1)
+            if pen_select == 1:  #medicore
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="green", width=3)
+            if pen_select == 2:  #thick
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="green", width=5)
         elif color_select == 2:
-            canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="blue")
+            if pen_select == 0:  #thin
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="blue", width=1)
+            if pen_select == 1:  #medicore
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="blue", width=3)
+            if pen_select == 2:  #thick
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="blue", width=5)
 
     oldx = mouse_e.x
     oldy = mouse_e.y
@@ -266,19 +293,19 @@ def mouse3_up(mouse_e):
 ## define window
 root = tk.Tk()
 root.title("SimpleDraw")
-root.geometry("600x500+200+150")
+root.geometry("610x500+200+150")
 
-canvas = tk.Canvas(root, width=600, height=500, bd=2, bg="#EEE")
+canvas = tk.Canvas(root, width=610, height=500, bd=2, bg="#EEE")
 canvas.grid(column=0, row=0, columnspan=1, rowspan=1)
 
 canvas.create_text(10,  25, anchor=tk.SW, text="draw status:", font=('Times', '12'), fill='#888')
 label_id = canvas.create_text(90, 25, anchor=tk.SW, text="line", font=('Times', '12'), fill='#888')
 status_label_list.append(label_id)
-canvas.create_text(510, 25, anchor=tk.SW, text="pen   :", font=('Times', '12'), fill='#888')
-label_id = canvas.create_text(555, 25, anchor=tk.SW, text="pencil", font=('Times', '12'), fill='#888')
+canvas.create_text(505, 25, anchor=tk.SW, text="pen   :", font=('Times', '12'), fill='#888')
+label_id = canvas.create_text(550, 25, anchor=tk.SW, text="thin", font=('Times', '12'), fill='#888')
 status_label_list.append(label_id)
-canvas.create_text(510, 45, anchor=tk.SW, text="color :", font=('Times', '12'), fill='#888')
-label_id = canvas.create_text(555, 45, anchor=tk.SW, text="red", font=('Times', '12'), fill='red')
+canvas.create_text(505, 45, anchor=tk.SW, text="color :", font=('Times', '12'), fill='#888')
+label_id = canvas.create_text(550, 45, anchor=tk.SW, text="red", font=('Times', '12'), fill='red')
 status_label_list.append(label_id)
 
 canvas.bind('<Button-1>', mouse1_down)
