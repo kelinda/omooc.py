@@ -1,9 +1,11 @@
 import Tkinter as tk
+import tkFont
 
 ## define globals
 draw_select = 0 #0 for lines, 1 for dots
 pen_select = 0 #
 color_select = 0 #0 for red, 1 for green, 2 for blue
+status_label_list = []
 
 no_draw = False #after select click, do not draw anything
 
@@ -23,6 +25,40 @@ oldx = 0
 oldy = 0
 
 ## define helpers
+def update_status_label():
+    global canvas
+    global draw_select, pen_select, color_select
+    global status_label_list
+    for label in status_label_list:
+        canvas.delete(label)
+    label_text = ''
+
+    if draw_select == 0: #line
+        label_text = 'line'
+    elif draw_select == 1: #dot 
+        label_text = 'dot'
+    label_id = canvas.create_text(90, 25, anchor=tk.SW, text=label_text, font=('Times', '12'), fill='#888')
+    status_label_list[0] = (label_id)
+
+    if pen_select == 0: #circle
+        label_text = 'circle'
+    elif pen_select == 1: # striganle
+        label_text = 'triangle'
+    elif pen_select == 2: # square
+        label_text = 'square'
+    label_id = canvas.create_text(555, 25, anchor=tk.SW, text=label_text, font=('Times', '12'), fill='#888')
+    status_label_list[1] = (label_id)
+
+    if color_select == 0: #red
+        label_text = 'red'
+    if color_select == 1: #green
+        label_text = 'green'
+    if color_select == 2: #blue
+        label_text = 'blue'
+    label_id = canvas.create_text(555, 45, anchor=tk.SW, text=label_text, font=('Times', '12'), fill=label_text)
+    status_label_list[2] = (label_id)
+        
+
 def canvas_draw_rectangle(left, top, right, bottom):
     global canvas
     global menu_list
@@ -187,6 +223,7 @@ def mouse1_down(mouse_e):
     if menu_is_showing:
         if is_cursor_in_menu(mouse_e.x, mouse_e.y):
             select_option(mouse_e.x, mouse_e.y)
+            update_status_label()
             menu_is_showing = 0
             clear_menus(mouse_e)
             return
@@ -233,6 +270,16 @@ root.geometry("600x500+200+150")
 
 canvas = tk.Canvas(root, width=600, height=500, bd=2, bg="#EEE")
 canvas.grid(column=0, row=0, columnspan=1, rowspan=1)
+
+canvas.create_text(10,  25, anchor=tk.SW, text="draw status:", font=('Times', '12'), fill='#888')
+label_id = canvas.create_text(90, 25, anchor=tk.SW, text="line", font=('Times', '12'), fill='#888')
+status_label_list.append(label_id)
+canvas.create_text(510, 25, anchor=tk.SW, text="pen   :", font=('Times', '12'), fill='#888')
+label_id = canvas.create_text(555, 25, anchor=tk.SW, text="pencil", font=('Times', '12'), fill='#888')
+status_label_list.append(label_id)
+canvas.create_text(510, 45, anchor=tk.SW, text="color :", font=('Times', '12'), fill='#888')
+label_id = canvas.create_text(555, 45, anchor=tk.SW, text="red", font=('Times', '12'), fill='red')
+status_label_list.append(label_id)
 
 canvas.bind('<Button-1>', mouse1_down)
 canvas.bind('<ButtonRelease-1>', mouse1_up)
