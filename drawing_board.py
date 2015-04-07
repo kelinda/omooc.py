@@ -1,16 +1,20 @@
 import Tkinter as tk
 
 ## define globals
+bgcolor = "#EEE"
+
 draw_select = 0 #0 for lines, 1 for dots
 pen_select = 0 # for line: thin, medicore, thick
                # for dot: triangle, circle, square
 color_select = 0 #0 for red, 1 for green, 2 for blue
+eraser_select = 0 #0 for thin eraser, 1 for medium, 2 for thick
 status_label_list = []
 
 no_draw = False #after select click, do not draw anything
 
-pen_list = ["triangle", "circle", "square"]
+pen_list = ["thin", "medium", "thick"]
 color_list = ["red", "green", "blue"]
+eraser_list = pen_list
 menu_list = [[]] #menu_list ids, subsequence hold drawing-option icon ids.
 
 menu_is_showing = 0 # 0 for no, 1 for yes.
@@ -36,7 +40,10 @@ def update_status_label():
     label_text = ''
 
     if draw_select == 0: #line
-        label_text = 'line'
+        if color_select < 4:
+            label_text = 'line'
+        else:
+            label_text = 'eraser'
     elif draw_select == 1: #dot 
         label_text = 'dot'
     label_id = canvas.create_text(90, 25, anchor=tk.SW, text=label_text, font=('Times', '12'), fill='#888')
@@ -62,10 +69,12 @@ def update_status_label():
 
     if color_select == 0: #red
         label_text = 'red'
-    if color_select == 1: #green
+    elif color_select == 1: #green
         label_text = 'green'
-    if color_select == 2: #blue
+    elif color_select == 2: #blue
         label_text = 'blue'
+    elif color_select >= 4: #eraser
+        label_text = bgcolor
     label_id = canvas.create_text(550, 45, anchor=tk.SW, text=label_text, font=('Times', '12'), fill=label_text)
     status_label_list[2] = (label_id)
         
@@ -80,15 +89,15 @@ def canvas_draw_pen_option(pen, left, top, right, bottom):
     global canvas
     global menu_list
     option_id = 0
-    if pen == "triangle":
+    if pen == "thin":
 #        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue", outline='#aaa', width=3)
         option_id = canvas.create_bitmap(left+2, top+2, anchor=tk.NW, bitmap="gray25")
         menu_list[-1].append(option_id)
-    elif pen == "circle":
+    elif pen == "medium":
 #        option_id = canvas.create_polygon(left+2, top+2, anchor=tk.NW, right, top, right, bottom, left, bottom, bitmap="gray50", outline='#aaa', width=3)
         option_id = canvas.create_bitmap(left+2, top+2, anchor=tk.NW, bitmap="gray50")
         menu_list[-1].append(option_id)
-    elif pen == "square":
+    elif pen == "thick":
 #        option_id = canvas.create_polygon(left+2, top+2, anchor=tk.NW, right, top, right, bottom, left, bottom, bitmap="gray25", outline='#aaa', width=3)
         option_id = canvas.create_bitmap(left+2, top+2, anchor=tk.NW, bitmap="gray75")
         menu_list[-1].append(option_id)
@@ -98,28 +107,36 @@ def canvas_draw_color_option(color, left, top, right, bottom):
     global menu_list
     option_id = 0
     if color == "red":
-	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="red", outline='#aaa', width=3)
-	    menu_list[-1].append(option_id)
+        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="red", outline='#aaa', width=3)
+        menu_list[-1].append(option_id)
     elif color == "green":
-	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="green", outline='#aaa', width=3)
-	    menu_list[-1].append(option_id)
+        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="green", outline='#aaa', width=3)
+        menu_list[-1].append(option_id)
     elif color == "blue":
-	    option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue", outline='#aaa', width=3)
-	    menu_list[-1].append(option_id)
+        option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="blue", outline='#aaa', width=3)
+        menu_list[-1].append(option_id)
 
 def canvas_draw_draw_switch(left, top, right, bottom):
-	    #option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="#e2c", outline='#aaa', width=3)
-        option_id = canvas.create_bitmap(left+5, top+2, anchor=tk.NW, bitmap="gray12")
+        #option_id = canvas.create_polygon(left, top, right, top, right, bottom, left, bottom, fill="#e2c", outline='#aaa', width=3)
+        option_id = canvas.create_bitmap(left, top+2, anchor=tk.NW, bitmap="gray12")
         menu_list[-1].append(option_id)
-        option_id = canvas.create_bitmap(left-5+option_square_size, top+2, anchor=tk.NW, bitmap="error")
+        option_id = canvas.create_bitmap(left+option_square_size, top+2, anchor=tk.NW, bitmap="error")
         menu_list[-1].append(option_id)
 
+def canvas_draw_eraser(left, top, right, bottom):
+    option_id = canvas.create_bitmap(left, top, anchor=tk.NW, bitmap="gray12")
+    menu_list[-1].append(option_id)
+    option_id = canvas.create_bitmap(left, top + option_square_size, anchor=tk.NW, bitmap="gray25")
+    menu_list[-1].append(option_id)
+    option_id = canvas.create_bitmap(left, top + 2 * option_square_size, anchor=tk.NW, bitmap="gray25")
+    menu_list[-1].append(option_id)
+    
 def draw_menu(mouse_e):
     global canvas
     global option_square_size
     global pen_list, color_list
     global menu_area
-    menu_height = max(len(pen_list),len(color_list))*option_square_size + option_square_size #the last one is draw select switch
+    menu_height = max(len(pen_list),len(color_list))*option_square_size + 4 * option_square_size #the last one is draw select switch and eraser
     menu_width = 2*option_square_size 
     menu_area[2] = menu_width
     menu_area[3] = menu_height
@@ -133,9 +150,13 @@ def draw_menu(mouse_e):
     for color in color_list:
         canvas_draw_color_option(color, mouse_e.x + option_square_size, mouse_e.y + i*option_square_size, mouse_e.x + 2*option_square_size, mouse_e.y + (i+1)*option_square_size)
         i += 1
-    
-    canvas_draw_draw_switch(mouse_e.x, mouse_e.y + max(len(pen_list), len(color_list))*option_square_size, mouse_e.x + 2*option_square_size, mouse_e.y + max(len(pen_list), len(color_list))*option_square_size + option_square_size)
 
+    switch_Y = mouse_e.y + max(len(pen_list), len(color_list))*option_square_size   
+    canvas_draw_draw_switch(mouse_e.x, switch_Y, mouse_e.x + 2*option_square_size, switch_Y + option_square_size)
+
+    canvas_draw_eraser(mouse_e.x, switch_Y + option_square_size, mouse_e.x + 2 * option_square_size, switch_Y + 2*option_square_size)
+    
+    
 def is_cursor_in_menu(cx, cy):
     global menu_area
     if menu_area[0] < cx < menu_area[0] + menu_area[2]:
@@ -154,27 +175,31 @@ def select_option(cx, cy):
     no_draw = True
     pen_or_color = (cx - menu_area[0]) / option_square_size #0 is  pen, 1 is color
     selected_option = (cy - menu_area[1]) / option_square_size
-    if selected_option == 3: #draw switch
-        if draw_select == 0:
-            draw_select = 1
-        else:
+
+    if color_select >= 4:
+        color_select -= 4    
+
+    if selected_option < 3:        
+        if pen_or_color == 0: # pen
+            pen_select = selected_option # 0: thin; 1:medium; 2:thick
+
+        elif pen_or_color == 1:  #color
+            color_select = selected_option #0: red; 1:green; 2: blue
+    
+    elif selected_option == 3: #draw switch
+        if pen_or_color == 0:
             draw_select = 0
-        return
-    if pen_or_color == 0: # pen
-        if selected_option == 0:#triangle
-            pen_select = 0 
-        elif selected_option == 1: #circle
-            pen_select = 1 
-        elif selected_option == 2: #square
-            pen_select = 2
-    elif pen_or_color == 1:  #color
-        if selected_option == 0:#red
-            color_select = 0 
-        elif selected_option == 1: #green
-            color_select = 1 
-        elif selected_option == 2: #blue
-            color_select = 2
-        
+        else:
+            draw_select = 1
+
+    elif selected_option >= 4: #draw eraser
+        if pen_or_color == 0:
+            eraser_select = selected_option - 4
+            draw_select = 0 # eraser is in fact a draw-line mode
+            pen_select = eraser_select
+            color_select += 4
+
+    print "pen", pen_select, 'color', color_select, 'draw', draw_select            
 
     
 def clear_menus(mouse_e):
@@ -186,8 +211,8 @@ def clear_menus(mouse_e):
             for option in menu:
                 menu.remove(option)
             menu_list.remove(menu)
-	    return
-	
+        return
+    
 def draw_dots(mouse_e):
     global canvas
     global radius
@@ -197,11 +222,11 @@ def draw_dots(mouse_e):
     print x,y
     if pen_select == 0: #circle
         if color_select == 0:
-	        canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius, fill='red', outline='red')
+            canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius, fill='red', outline='red')
         elif color_select == 1:
-	        canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius, fill='green', outline='green')
+            canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius, fill='green', outline='green')
         elif color_select == 2:
-	        canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius, fill='blue', outline='blue')
+            canvas.create_oval(x-circle_radius, y-circle_radius, x+circle_radius, y+circle_radius, fill='blue', outline='blue')
     elif pen_select == 1: # striganle
         if color_select == 0:
             canvas.create_polygon(x, y-1.712/3*10, x+10/2, y+1.712/6*10, x-10/2, y+1.712/6*10, fill='red', outline='red')
@@ -244,6 +269,13 @@ def drawing(mouse_e):
                     canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="blue", width=3)
             if pen_select == 2:  #thick
                     canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill="blue", width=5)
+        elif color_select >= 4: # this is a eraser
+            if pen_select == 0:  #thin
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill=bgcolor, width=1)
+            if pen_select == 1:  #medicore
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill=bgcolor, width=3)
+            if pen_select == 2:  #thick
+                    canvas.create_line(oldx, oldy, mouse_e.x, mouse_e.y, fill=bgcolor, width=5)
 
     oldx = mouse_e.x
     oldy = mouse_e.y
@@ -301,7 +333,7 @@ root = tk.Tk()
 root.title("SimpleDraw")
 root.geometry("610x500+200+150")
 
-canvas = tk.Canvas(root, width=610, height=500, bd=2, bg="#EEE")
+canvas = tk.Canvas(root, width=610, height=500, bd=2, bg=bgcolor)
 canvas.grid(column=0, row=0, columnspan=1, rowspan=1)
 
 canvas.create_text(10,  25, anchor=tk.SW, text="draw status:", font=('Times', '12'), fill='#888')
@@ -320,4 +352,3 @@ canvas.bind('<Button-3>', mouse3_down)
 canvas.bind('<ButtonRelease-3>', mouse3_up)
 
 tk.mainloop()
-
